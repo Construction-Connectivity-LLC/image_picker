@@ -29,15 +29,23 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker_android:
-    path: ../image_picker_android
+    git:
+      url: https://github.com/Construction-Connectivity-LLC/image_picker.git
+      path: image_picker_android
   image_picker_for_web:
-    path: ../image_picker_for_web
+    git:
+      url: https://github.com/Construction-Connectivity-LLC/image_picker.git
+      path: image_picker_for_web
   image_picker_ios:
-    path: ../image_picker_ios
+    git:
+      url: https://github.com/Construction-Connectivity-LLC/image_picker.git
+      path: image_picker_ios
   image_picker_linux: ^0.2.1
   image_picker_macos: ^0.2.1
   image_picker_platform_interface:
-    path: ../image_picker_platform_interface
+    git:
+      url: https://github.com/Construction-Connectivity-LLC/image_picker.git
+      path: image_picker_platform_interface
   image_picker_windows: ^0.2.1
 
 dev_dependencies:
