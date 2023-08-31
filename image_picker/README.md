@@ -186,6 +186,7 @@ final XFile? media = await picker.pickMedia();
 final List<XFile> medias = await picker.pickMultipleMedia();
 ```
 
+
 ## Migrating to 1.0
 
 Starting with version 0.8.2 of the image_picker plugin, new methods were
