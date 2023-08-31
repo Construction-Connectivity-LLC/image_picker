@@ -55,6 +55,8 @@ class ImagePickerIOS extends ImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
@@ -63,6 +65,8 @@ class ImagePickerIOS extends ImagePickerPlatform {
       options: ImagePickerOptions(
         maxWidth: maxWidth,
         maxHeight: maxHeight,
+        defaultLatitude: defaultLatitude,
+        defaultLongitude: defaultLongitude,
         imageQuality: imageQuality,
         preferredCameraDevice: preferredCameraDevice,
       ),
@@ -86,6 +90,8 @@ class ImagePickerIOS extends ImagePickerPlatform {
   Future<List<PickedFile>?> pickMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) async {
     final List<dynamic> paths = await _pickMultiImageAsPath(
@@ -138,7 +144,8 @@ class ImagePickerIOS extends ImagePickerPlatform {
     return (await _hostApi.pickMultiImage(
             MaxSize(width: maxWidth, height: maxHeight),
             imageQuality,
-            options.imageOptions.requestFullMetadata))
+            options.imageOptions.requestFullMetadata,
+        null))
         .cast<String>();
   }
 
@@ -162,15 +169,21 @@ class ImagePickerIOS extends ImagePickerPlatform {
       throw ArgumentError.value(maxHeight, 'maxHeight', 'cannot be negative');
     }
 
+    final double? defaultLatitude = options.defaultLatitude;
+    final double? defaultLongitude = options.defaultLongitude;
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     return _hostApi.pickImage(
-      SourceSpecification(
-        type: _convertSource(source),
-        camera: _convertCamera(options.preferredCameraDevice),
-      ),
-      MaxSize(width: maxWidth, height: maxHeight),
-      imageQuality,
-      options.requestFullMetadata,
-    );
+        SourceSpecification(
+          type: _convertSource(source),
+          camera: _convertCamera(options.preferredCameraDevice),
+        ),
+        MaxSize(width: maxWidth, height: maxHeight),
+        imageQuality,
+        options.requestFullMetadata,
+        defaultCoordinates);
   }
 
   @override
@@ -221,6 +234,8 @@ class ImagePickerIOS extends ImagePickerPlatform {
   @override
   Future<PickedFile?> pickVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
@@ -241,7 +256,8 @@ class ImagePickerIOS extends ImagePickerPlatform {
         SourceSpecification(
             type: _convertSource(source),
             camera: _convertCamera(preferredCameraDevice)),
-        maxDuration?.inSeconds);
+        maxDuration?.inSeconds,
+        Coordinates(latitude: 69.69, longitude: 69.69));
   }
 
   @override

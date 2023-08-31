@@ -32,13 +32,20 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     final String? path = await _getImagePath(
       source: source,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
+      defaultCoordinates: defaultCoordinates,
       imageQuality: imageQuality,
       preferredCameraDevice: preferredCameraDevice,
     );
@@ -49,11 +56,18 @@ class ImagePickerAndroid extends ImagePickerPlatform {
   Future<List<PickedFile>?> pickMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) async {
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     final List<dynamic> paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
+      defaultCoordinates: defaultCoordinates,
       imageQuality: imageQuality,
     );
     if (paths.isEmpty) {
@@ -66,6 +80,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
   Future<List<dynamic>> _getMultiImagePath({
     double? maxWidth,
     double? maxHeight,
+    Coordinates? defaultCoordinates,
     int? imageQuality,
   }) {
     if (imageQuality != null && (imageQuality < 0 || imageQuality > 100)) {
@@ -86,6 +101,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
       ImageSelectionOptions(
           maxWidth: maxWidth,
           maxHeight: maxHeight,
+          defaultCoordinates: defaultCoordinates,
           quality: imageQuality ?? 100),
       GeneralOptions(
           allowMultiple: true, usePhotoPicker: useAndroidPhotoPicker),
@@ -96,6 +112,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    Coordinates? defaultCoordinates,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     bool requestFullMetadata = true,
@@ -116,6 +133,7 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     final List<String?> paths = await _hostApi.pickImages(
       _buildSourceSpec(source, preferredCameraDevice),
       ImageSelectionOptions(
+          defaultCoordinates: defaultCoordinates,
           maxWidth: maxWidth,
           maxHeight: maxHeight,
           quality: imageQuality ?? 100),
@@ -130,12 +148,19 @@ class ImagePickerAndroid extends ImagePickerPlatform {
   @override
   Future<PickedFile?> pickVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     final String? path = await _getVideoPath(
       source: source,
       maxDuration: maxDuration,
+      defaultCoordinates: defaultCoordinates,
       preferredCameraDevice: preferredCameraDevice,
     );
     return path != null ? PickedFile(path) : null;
@@ -143,12 +168,15 @@ class ImagePickerAndroid extends ImagePickerPlatform {
 
   Future<String?> _getVideoPath({
     required ImageSource source,
+    Coordinates? defaultCoordinates,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
     final List<String?> paths = await _hostApi.pickVideos(
       _buildSourceSpec(source, preferredCameraDevice),
-      VideoSelectionOptions(maxDurationSeconds: maxDuration?.inSeconds),
+      VideoSelectionOptions(
+          maxDurationSeconds: maxDuration?.inSeconds,
+          defaultCoordinates: defaultCoordinates),
       GeneralOptions(
         allowMultiple: false,
         usePhotoPicker: useAndroidPhotoPicker,
@@ -180,10 +208,17 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     required ImageSource source,
     ImagePickerOptions options = const ImagePickerOptions(),
   }) async {
+    final Coordinates? defaultCoordinates =
+        options.defaultLatitude != null && options.defaultLongitude != null
+            ? Coordinates(
+                latitude: options.defaultLatitude!,
+                longitude: options.defaultLongitude!)
+            : null;
     final String? path = await _getImagePath(
       source: source,
       maxHeight: options.maxHeight,
       maxWidth: options.maxWidth,
+      defaultCoordinates: defaultCoordinates,
       imageQuality: options.imageQuality,
       preferredCameraDevice: options.preferredCameraDevice,
       requestFullMetadata: options.requestFullMetadata,

@@ -52,6 +52,8 @@ typedef void (^FlutterResultAdapter)(NSArray<NSString *> *_Nullable, FlutterErro
 /** Whether the picker should include videos in the list*/
 @property(nonatomic, assign) BOOL includeVideo;
 
+@property(nonatomic, strong, nullable) FLTCoordinates *defaultCoordinates;
+
 @end
 
 #pragma mark -

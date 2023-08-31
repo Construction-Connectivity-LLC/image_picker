@@ -173,6 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
               options: ImagePickerOptions(
                 maxWidth: maxWidth,
                 maxHeight: maxHeight,
+                defaultLatitude: 69.69,
+                defaultLongitude: 69.69,
                 imageQuality: quality,
               ),
             );
