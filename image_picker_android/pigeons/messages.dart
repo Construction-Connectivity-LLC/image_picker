@@ -15,19 +15,27 @@ import 'package:pigeon/pigeon.dart';
 ))
 class GeneralOptions {
   GeneralOptions(this.allowMultiple, this.usePhotoPicker);
+
   bool allowMultiple;
   bool usePhotoPicker;
 }
 
 /// Options for image selection and output.
 class ImageSelectionOptions {
-  ImageSelectionOptions({this.maxWidth, this.maxHeight, required this.quality});
+  ImageSelectionOptions(
+      {this.maxWidth,
+      this.maxHeight,
+      required this.quality,
+      this.defaultCoordinates});
 
   /// If set, the max width that the image should be resized to fit in.
   double? maxWidth;
 
   /// If set, the max height that the image should be resized to fit in.
   double? maxHeight;
+
+  /// If set, the coordinates to be written to image's exif metadata in case they were cut off by the OS.
+  Coordinates? defaultCoordinates;
 
   /// The quality of the output image, from 0-100.
   ///
@@ -45,10 +53,12 @@ class MediaSelectionOptions {
 
 /// Options for image selection and output.
 class VideoSelectionOptions {
-  VideoSelectionOptions({this.maxDurationSeconds});
+  VideoSelectionOptions({this.maxDurationSeconds, this.defaultCoordinates});
 
   /// The maximum desired length for the video, in seconds.
   int? maxDurationSeconds;
+
+  Coordinates? defaultCoordinates;
 }
 
 // Corresponds to `CameraDevice` from the platform interface package.
@@ -60,8 +70,16 @@ enum SourceType { camera, gallery }
 /// Specification for the source of an image or video selection.
 class SourceSpecification {
   SourceSpecification(this.type, this.camera);
+
   SourceType type;
   SourceCamera? camera;
+}
+
+class Coordinates {
+  Coordinates(this.latitude, this.longitude);
+
+  double latitude;
+  double longitude;
 }
 
 /// An error that occurred during lost result retrieval.
@@ -69,6 +87,7 @@ class SourceSpecification {
 /// The data here maps to the `PlatformException` that will be created from it.
 class CacheRetrievalError {
   CacheRetrievalError({required this.code, this.message});
+
   final String code;
   final String? message;
 }

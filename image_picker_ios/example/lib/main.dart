@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:exif/exif.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
@@ -153,9 +154,16 @@ class _MyHomePageState extends State<MyHomePage> {
               options: ImagePickerOptions(
                 maxWidth: maxWidth,
                 maxHeight: maxHeight,
+                defaultLatitude: 32.0,
+                defaultLongitude: 32.0,
                 imageQuality: quality,
               ),
             );
+            if (pickedFile != null) {
+              final bytes = await pickedFile.readAsBytes();
+              final Map<String, IfdTag> tags = await readExifFromBytes(bytes);
+              print(tags);
+            }
             setState(() {
               _setImageFileListFromFile(pickedFile);
             });

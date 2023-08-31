@@ -29,7 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
-import io.flutter.Log;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,81 +37,108 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import io.flutter.Log;
+
 class FileUtils {
-  /**
-   * Copies the file from the given content URI to a temporary directory, retaining the original
-   * file name if possible.
-   *
-   * <p>Each file is placed in its own directory to avoid conflicts according to the following
-   * scheme: {cacheDir}/{randomUuid}/{fileName}
-   *
-   * <p>File extension is changed to match MIME type of the file, if known. Otherwise, the extension
-   * is left unchanged.
-   *
-   * <p>If the original file name is unknown, a predefined "image_picker" filename is used and the
-   * file extension is deduced from the mime type (with fallback to ".jpg" in case of failure).
-   */
-  String getPathFromUri(final Context context, final Uri uri) {
-    try (InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
-      String uuid = UUID.randomUUID().toString();
-      File targetDirectory = new File(context.getCacheDir(), uuid);
-      targetDirectory.mkdir();
-      // TODO(SynSzakala) according to the docs, `deleteOnExit` does not work reliably on Android; we should preferably
-      //  just clear the picked files after the app startup.
-      targetDirectory.deleteOnExit();
-      String fileName = getImageName(context, uri);
-      String extension = getImageExtension(context, uri);
+    /**
+     * Copies the file from the given content URI to a temporary directory, retaining the original
+     * file name if possible.
+     *
+     * <p>Each file is placed in its own directory to avoid conflicts according to the following
+     * scheme: {cacheDir}/{randomUuid}/{fileName}
+     *
+     * <p>File extension is changed to match MIME type of the file, if known. Otherwise, the extension
+     * is left unchanged.
+     *
+     * <p>If the original file name is unknown, a predefined "image_picker" filename is used and the
+     * file extension is deduced from the mime type (with fallback to ".jpg" in case of failure).
+     */
+    String getPathFromUri(final Context context, final Uri uri) {
+        try (InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
+            String uuid = UUID.randomUUID().toString();
+            File targetDirectory = new File(context.getCacheDir(), uuid);
+            targetDirectory.mkdir();
+            // TODO(SynSzakala) according to the docs, `deleteOnExit` does not work reliably on Android; we should preferably
+            //  just clear the picked files after the app startup.
+            targetDirectory.deleteOnExit();
+            String fileName = getImageName(context, uri);
+            String extension = getImageExtension(context, uri);
 
-      if (fileName == null) {
-        Log.w("FileUtils", "Cannot get file name for " + uri);
-        if (extension == null) extension = ".jpg";
-        fileName = "image_picker" + extension;
-      } else if (extension != null) {
-        fileName = getBaseName(fileName) + extension;
-      }
-      File file = new File(targetDirectory, fileName);
-      try (OutputStream outputStream = new FileOutputStream(file)) {
-        copy(inputStream, outputStream);
-        return file.getPath();
-      }
-    } catch (IOException e) {
-      // If closing the output stream fails, we cannot be sure that the
-      // target file was written in full. Flushing the stream merely moves
-      // the bytes into the OS, not necessarily to the file.
-      return null;
-    } catch (SecurityException e) {
-      // Calling `ContentResolver#openInputStream()` has been reported to throw a
-      // `SecurityException` on some devices in certain circumstances. Instead of crashing, we
-      // return `null`.
-      //
-      // See https://github.com/flutter/flutter/issues/100025 for more details.
-      return null;
+            if (fileName == null) {
+                Log.w("FileUtils", "Cannot get file name for " + uri);
+                if (extension == null) extension = ".jpg";
+                fileName = "image_picker" + extension;
+            } else if (extension != null) {
+                fileName = getBaseName(fileName) + extension;
+            }
+            File file = new File(targetDirectory, fileName);
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+//                ExifInterface exif = new ExifInterface(inputStream);
+//                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+//                String latitude = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+//                String longitude = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+//                double altitude = exif.getAttributeDouble(ExifInterface.TAG_GPS_ALTITUDE, 0);
+//                Log.d("FileUtils", "orientation: " + orientation);
+//                Log.d("FileUtils", "latitude: " + latitude);
+//                Log.d("FileUtils", "longitude: " + longitude);
+//                Log.d("FileUtils", "altitude: " + altitude);
+//
+//            }
+            try (OutputStream outputStream = new FileOutputStream(file)) {
+                copy(inputStream, outputStream);
+//                ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+//                byte[] bytes = outputStream2.toByteArray();
+//                try {
+//                    Bitmap bm = BitmapFactory.decodeFile(uri.getPath());
+//                    Log.d("FileUtils", "BitmapFactory.decodeByteArray: " + bm.getWidth() + "x" + bm.getHeight());
+//
+//                } catch (Exception e) {
+//                    Log.d("FileUtils", "BitmapFactory.decodeByteArray: " + e.getMessage());
+//                }
+                return file.getPath();
+            }
+        } catch (IOException e) {
+            // If closing the output stream fails, we cannot be sure that the
+            // target file was written in full. Flushing the stream merely moves
+            // the bytes into the OS, not necessarily to the file.
+            return null;
+        } catch (SecurityException e) {
+            // Calling `ContentResolver#openInputStream()` has been reported to throw a
+            // `SecurityException` on some devices in certain circumstances. Instead of crashing, we
+            // return `null`.
+            //
+            // See https://github.com/flutter/flutter/issues/100025 for more details.
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
-  }
 
-  /** @return extension of image with dot, or null if it's empty. */
-  private static String getImageExtension(Context context, Uri uriImage) {
-    String extension;
+    /**
+     * @return extension of image with dot, or null if it's empty.
+     */
+    private static String getImageExtension(Context context, Uri uriImage) {
+        String extension;
 
-    try {
-      if (uriImage.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-        final MimeTypeMap mime = MimeTypeMap.getSingleton();
-        extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uriImage));
-      } else {
-        extension =
-            MimeTypeMap.getFileExtensionFromUrl(
-                Uri.fromFile(new File(uriImage.getPath())).toString());
-      }
-    } catch (Exception e) {
-      return null;
+        try {
+            if (uriImage.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+                final MimeTypeMap mime = MimeTypeMap.getSingleton();
+                extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uriImage));
+            } else {
+                extension =
+                        MimeTypeMap.getFileExtensionFromUrl(
+                                Uri.fromFile(new File(uriImage.getPath())).toString());
+            }
+        } catch (Exception e) {
+            return null;
+        }
+
+        if (extension == null || extension.isEmpty()) {
+            return null;
+        }
+
+        return "." + extension;
     }
-
-    if (extension == null || extension.isEmpty()) {
-      return null;
-    }
-
-    return "." + extension;
-  }
 
   /** @return name of the image provided by ContentResolver; this may be null. */
   private static String getImageName(Context context, Uri uriImage) {

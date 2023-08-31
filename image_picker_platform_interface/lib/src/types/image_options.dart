@@ -17,6 +17,8 @@ class ImagePickerOptions extends ImageOptions {
     super.imageQuality,
     super.requestFullMetadata,
     this.preferredCameraDevice = CameraDevice.rear,
+    this.defaultLatitude,
+    this.defaultLongitude,
   }) : super();
 
   /// Creates an instance with the given [maxHeight], [maxWidth], [imageQuality],
@@ -27,6 +29,8 @@ class ImagePickerOptions extends ImageOptions {
     super.imageQuality,
     super.requestFullMetadata,
     this.preferredCameraDevice = CameraDevice.rear,
+    this.defaultLatitude,
+    this.defaultLongitude,
   }) : super.createAndValidate();
 
   /// Used to specify the camera to use when the `source` is [ImageSource.camera].
@@ -34,6 +38,9 @@ class ImagePickerOptions extends ImageOptions {
   /// Ignored if the source is not [ImageSource.camera], or the chosen camera is not
   /// supported on the device. Defaults to [CameraDevice.rear].
   final CameraDevice preferredCameraDevice;
+
+  final double? defaultLatitude;
+  final double? defaultLongitude;
 }
 
 /// Specifies image-specific options for picking.

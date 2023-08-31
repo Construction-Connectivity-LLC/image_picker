@@ -164,128 +164,195 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
 
 #pragma mark - FLTImagePickerApi
 
-- (void)pickImageWithSource:(nonnull FLTSourceSpecification *)source
-                    maxSize:(nonnull FLTMaxSize *)maxSize
-                    quality:(nullable NSNumber *)imageQuality
-               fullMetadata:(NSNumber *)fullMetadata
-                 completion:
-                     (nonnull void (^)(NSString *_Nullable, FlutterError *_Nullable))completion {
-  [self cancelInProgressCall];
-  FLTImagePickerMethodCallContext *context = [[FLTImagePickerMethodCallContext alloc]
-      initWithResult:^void(NSArray<NSString *> *paths, FlutterError *error) {
-        if (paths.count > 1) {
-          completion(nil, [FlutterError errorWithCode:@"invalid_result"
-                                              message:@"Incorrect number of return paths provided"
-                                              details:nil]);
-        }
-        completion(paths.firstObject, error);
-      }];
-  context.maxSize = maxSize;
-  context.imageQuality = imageQuality;
-  context.maxImageCount = 1;
-  context.requestFullMetadata = [fullMetadata boolValue];
+- (void)pickImageWithSource:(nonnull FLTSourceSpecification
+                             *)
+source
+maxSize
+                           :(
+                             nonnull FLTMaxSize
+                             *)
+maxSize
+quality
+                           :(
+                             nullable NSNumber
+                             *)
+imageQuality
+fullMetadata
+                           :(NSNumber *)
+fullMetadata
+defaultCoordinates
+                           :(
+                             nullable FLTCoordinates
+                             *)
+defaultCoordinates
+completion
+                           :
+(nonnull void (^)(
+                  NSString *_Nullable, FlutterError
+                  *_Nullable))completion {
+                      [self cancelInProgressCall];
+                      FLTImagePickerMethodCallContext *context = [[FLTImagePickerMethodCallContext alloc]
+                                                                  initWithResult:^void(
+                                                                                       NSArray < NSString * > *paths, FlutterError * error) {
+                                                                                           if (paths.count > 1) {
+                                                                                               completion(nil, [FlutterError errorWithCode:@"invalid_result"
+                                                                                                                                   message:@"Incorrect number of return paths provided"
+                                                                                                                                   details:nil]);
+                                                                                           }
+                                                                                           completion(paths.firstObject, error);
+                                                                                       }];
+                      context.maxSize = maxSize;
+                      context.imageQuality = imageQuality;
+                      context.defaultCoordinates = defaultCoordinates;
+                      context.maxImageCount = 1;
+                      context.requestFullMetadata = [fullMetadata boolValue];
+                      
+                      if (source.type == FLTSourceTypeGallery) {  // Capture is not possible with PHPicker
+                          if (@available
+                              (iOS
+                               14, *)) {
+                              [self launchPHPickerWithContext:context];
+                          } else {
+                              [self launchUIImagePickerWithSource:source context:context];
+                          }
+                      } else {
+                          [self launchUIImagePickerWithSource:source context:context];
+                      }
+                  }
 
-  if (source.type == FLTSourceTypeGallery) {  // Capture is not possible with PHPicker
-    if (@available(iOS 14, *)) {
-      [self launchPHPickerWithContext:context];
+- (void)pickMultiImageWithMaxSize:(nonnull FLTMaxSize
+                                   
+                                   *)
+maxSize
+quality
+                                 :(
+                                   nullable NSNumber
+                                   *)
+imageQuality
+fullMetadata
+                                 :(NSNumber *)
+fullMetadata
+defaultCoordinates
+                                 :(
+                                   nullable FLTCoordinates
+                                   *)
+defaultCoordinates
+completion
+                                 :(nonnull void (^)(NSArray<NSString *> *_Nullable,
+                                                    FlutterError *_Nullable
+                                                    ))completion {
+    FLTImagePickerMethodCallContext * context =
+    [[FLTImagePickerMethodCallContext alloc] initWithResult:completion];
+    context.maxSize = maxSize;
+    context.imageQuality = imageQuality;
+    context.defaultCoordinates = defaultCoordinates;
+    context.requestFullMetadata = [fullMetadata boolValue];
+    
+    if (@available
+        (iOS
+         14, *)) {
+        [self launchPHPickerWithContext:context];
     } else {
-      [self launchUIImagePickerWithSource:source context:context];
+        // Camera is ignored for gallery mode, so the value here is arbitrary.
+        [self launchUIImagePickerWithSource:[FLTSourceSpecification makeWithType:FLTSourceTypeGallery
+                                                                          camera:FLTSourceCameraRear]
+                                    context:context];
     }
-  } else {
-    [self launchUIImagePickerWithSource:source context:context];
-  }
 }
 
-- (void)pickMultiImageWithMaxSize:(nonnull FLTMaxSize *)maxSize
-                          quality:(nullable NSNumber *)imageQuality
-                     fullMetadata:(NSNumber *)fullMetadata
-                       completion:(nonnull void (^)(NSArray<NSString *> *_Nullable,
-                                                    FlutterError *_Nullable))completion {
-  FLTImagePickerMethodCallContext *context =
-      [[FLTImagePickerMethodCallContext alloc] initWithResult:completion];
-  context.maxSize = maxSize;
-  context.imageQuality = imageQuality;
-  context.requestFullMetadata = [fullMetadata boolValue];
-
-  if (@available(iOS 14, *)) {
-    [self launchPHPickerWithContext:context];
-  } else {
-    // Camera is ignored for gallery mode, so the value here is arbitrary.
-    [self launchUIImagePickerWithSource:[FLTSourceSpecification makeWithType:FLTSourceTypeGallery
-                                                                      camera:FLTSourceCameraRear]
-                                context:context];
-  }
+- (void)pickMediaWithMediaSelectionOptions:(nonnull FLTMediaSelectionOptions
+                                            
+                                            *)
+mediaSelectionOptions
+completion
+                                          :(nonnull void (^)(NSArray<NSString *> *_Nullable,
+                                                             FlutterError *_Nullable
+                                                             ))completion {
+    FLTImagePickerMethodCallContext * context =
+    [[FLTImagePickerMethodCallContext alloc] initWithResult:completion];
+    context.maxSize = [mediaSelectionOptions maxSize];
+    context.imageQuality = [mediaSelectionOptions imageQuality];
+    context.requestFullMetadata = [mediaSelectionOptions requestFullMetadata];
+    context.includeVideo = YES;
+    context.defaultCoordinates = [mediaSelectionOptions defaultCoordinates];
+    if (![[mediaSelectionOptions allowMultiple] boolValue]) {
+        context.maxImageCount = 1;
+    }
+    
+    if (@available
+        (iOS
+         14, *)) {
+        [self launchPHPickerWithContext:context];
+    } else {
+        // Camera is ignored for gallery mode, so the value here is arbitrary.
+        [self launchUIImagePickerWithSource:[FLTSourceSpecification makeWithType:FLTSourceTypeGallery
+                                                                          camera:FLTSourceCameraRear]
+                                    context:context];
+    }
 }
 
-- (void)pickMediaWithMediaSelectionOptions:(nonnull FLTMediaSelectionOptions *)mediaSelectionOptions
-                                completion:(nonnull void (^)(NSArray<NSString *> *_Nullable,
-                                                             FlutterError *_Nullable))completion {
-  FLTImagePickerMethodCallContext *context =
-      [[FLTImagePickerMethodCallContext alloc] initWithResult:completion];
-  context.maxSize = [mediaSelectionOptions maxSize];
-  context.imageQuality = [mediaSelectionOptions imageQuality];
-  context.requestFullMetadata = [mediaSelectionOptions requestFullMetadata];
-  context.includeVideo = YES;
-  if (![[mediaSelectionOptions allowMultiple] boolValue]) {
-    context.maxImageCount = 1;
-  }
-
-  if (@available(iOS 14, *)) {
-    [self launchPHPickerWithContext:context];
-  } else {
-    // Camera is ignored for gallery mode, so the value here is arbitrary.
-    [self launchUIImagePickerWithSource:[FLTSourceSpecification makeWithType:FLTSourceTypeGallery
-                                                                      camera:FLTSourceCameraRear]
-                                context:context];
-  }
-}
-
-- (void)pickVideoWithSource:(nonnull FLTSourceSpecification *)source
-                maxDuration:(nullable NSNumber *)maxDurationSeconds
-                 completion:
-                     (nonnull void (^)(NSString *_Nullable, FlutterError *_Nullable))completion {
-  FLTImagePickerMethodCallContext *context = [[FLTImagePickerMethodCallContext alloc]
-      initWithResult:^void(NSArray<NSString *> *paths, FlutterError *error) {
-        if (paths.count > 1) {
-          completion(nil, [FlutterError errorWithCode:@"invalid_result"
-                                              message:@"Incorrect number of return paths provided"
-                                              details:nil]);
-        }
-        completion(paths.firstObject, error);
-      }];
-  context.maxImageCount = 1;
-
-  UIImagePickerController *imagePickerController = [self createImagePickerController];
-  imagePickerController.modalPresentationStyle = UIModalPresentationCurrentContext;
-  imagePickerController.delegate = self;
-  imagePickerController.mediaTypes = @[
-    (NSString *)kUTTypeMovie, (NSString *)kUTTypeAVIMovie, (NSString *)kUTTypeVideo,
-    (NSString *)kUTTypeMPEG4
-  ];
-  imagePickerController.videoQuality = UIImagePickerControllerQualityTypeHigh;
-
-  if (maxDurationSeconds) {
-    NSTimeInterval max = [maxDurationSeconds doubleValue];
-    imagePickerController.videoMaximumDuration = max;
-  }
-
-  self.callContext = context;
-
-  switch (source.type) {
-    case FLTSourceTypeCamera:
-      [self checkCameraAuthorizationWithImagePicker:imagePickerController
-                                             camera:[self cameraDeviceForSource:source]];
-      break;
-    case FLTSourceTypeGallery:
-      [self checkPhotoAuthorizationWithImagePicker:imagePickerController];
-      break;
-    default:
-      [self sendCallResultWithError:[FlutterError errorWithCode:@"invalid_source"
-                                                        message:@"Invalid video source."
-                                                        details:nil]];
-      break;
-  }
-}
+- (void)pickVideoWithSource:(nonnull FLTSourceSpecification
+                             
+                             *)
+source
+maxDuration
+                           :(
+                             nullable NSNumber
+                             *)
+maxDurationSeconds
+defaultCoordinates
+                           :(
+                             nullable FLTCoordinates
+                             *)
+defaultCoordinates
+completion
+                           :
+(nonnull void (^)(
+                  NSString *_Nullable, FlutterError
+                  *_Nullable))completion {
+                      FLTImagePickerMethodCallContext *context = [[FLTImagePickerMethodCallContext alloc]
+                                                                  initWithResult:^void(
+                                                                                       NSArray < NSString * > *paths, FlutterError * error) {
+                                                                                           if (paths.count > 1) {
+                                                                                               completion(nil, [FlutterError errorWithCode:@"invalid_result"
+                                                                                                                                   message:@"Incorrect number of return paths provided"
+                                                                                                                                   details:nil]);
+                                                                                           }
+                                                                                           completion(paths.firstObject, error);
+                                                                                       }];
+                      context.maxImageCount = 1;
+                      
+                      UIImagePickerController *imagePickerController = [self createImagePickerController];
+                      imagePickerController.modalPresentationStyle = UIModalPresentationCurrentContext;
+                      imagePickerController.delegate = self;
+                      imagePickerController.mediaTypes = @[
+                          (NSString *) kUTTypeMovie, (NSString *) kUTTypeAVIMovie, (NSString *) kUTTypeVideo,
+                          (NSString *) kUTTypeMPEG4
+                      ];
+                      imagePickerController.videoQuality = UIImagePickerControllerQualityTypeHigh;
+                      
+                      if (maxDurationSeconds) {
+                          NSTimeInterval max = [maxDurationSeconds doubleValue];
+                          imagePickerController.videoMaximumDuration = max;
+                      }
+                      
+                      self.callContext = context;
+                      
+                      switch (source.type) {
+                          case FLTSourceTypeCamera:
+                              [self checkCameraAuthorizationWithImagePicker:imagePickerController
+                                                                     camera:[self cameraDeviceForSource:source]];
+                              break;
+                          case FLTSourceTypeGallery:
+                              [self checkPhotoAuthorizationWithImagePicker:imagePickerController];
+                              break;
+                          default:
+                              [self sendCallResultWithError:[FlutterError errorWithCode:@"invalid_source"
+                                                                                message:@"Invalid video source."
+                                                                                details:nil]];
+                              break;
+                      }
+                  }
 
 #pragma mark -
 
@@ -516,6 +583,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
   NSNumber *imageQuality = currentCallContext.imageQuality;
   NSNumber *desiredImageQuality = [self getDesiredImageQuality:imageQuality];
   BOOL requestFullMetadata = currentCallContext.requestFullMetadata;
+  FLTCoordinates *defaultCoordinates = currentCallContext.defaultCoordinates;
   NSMutableArray *pathList = [[NSMutableArray alloc] initWithCapacity:results.count];
   __block FlutterError *saveError = nil;
   __weak typeof(self) weakSelf = self;
@@ -589,48 +657,188 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
     if (image == nil) {
       image = info[UIImagePickerControllerOriginalImage];
     }
+      
+      FLTCoordinates *coordinates = self.callContext.defaultCoordinates;
+      NSNumber *lat = coordinates.latitude;
+      NSNumber *lon = coordinates.longitude;
     NSNumber *maxWidth = self.callContext.maxSize.width;
     NSNumber *maxHeight = self.callContext.maxSize.height;
     NSNumber *imageQuality = self.callContext.imageQuality;
     NSNumber *desiredImageQuality = [self getDesiredImageQuality:imageQuality];
+    
+    NSLog(@"default latitude: %@", lat);
+    NSLog(@"default latitude: %@", lat);
+    NSLog(@"default coordinates: %@", coordinates.description);
+        
+    NSURL *url = info[UIImagePickerControllerReferenceURL];
+    NSLog(@"%@", info.description);
+    if (url != nil) {
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsWithALAssetURLs:@[url] options:nil];
+        PHAsset *asset = [fetchResult firstObject];
+        NSLog(@"latitude: %f", asset.location.coordinate.latitude);
+        NSLog(@"creationDate: %@", asset.creationDate);
+        NSLog(@"default latitude: %@", lat);
+        NSLog(@"default longitude: %@", lon);
+    } else {
+        NSLog(@"%@", info.description);
+    }
+      
+      
+      // Create CLLocationCoordinate2D using latitude and longitude values
+      CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([lat doubleValue], [lon doubleValue]);
 
+      // Create CLLocation object from the CLLocationCoordinate2D
+      CLLocation *location = [[CLLocation alloc] initWithCoordinate:coordinate
+                                                             altitude:0.0
+                                                   horizontalAccuracy:kCLLocationAccuracyBest
+                                                     verticalAccuracy:kCLLocationAccuracyBest
+                                                            timestamp:[NSDate date]];
+     
+      
+      
+        
     PHAsset *originalAsset;
     if (_callContext.requestFullMetadata) {
       // Full metadata are available only in PHAsset, which requires gallery permission.
       originalAsset = [FLTImagePickerPhotoAssetUtil getAssetFromImagePickerInfo:info];
+      NSLog(@"latitude: %f", originalAsset.location.coordinate.latitude);
+      NSLog(@"longitude: %f", originalAsset.location.coordinate.longitude);
+      NSLog(@"default latitude: %@", lat);
+      NSLog(@"default longitude: %@", lon);
+      NSLog(@"Starting edit.");
+        
+        
+//        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+//                PHAssetChangeRequest *imgReq = [PHAssetChangeRequest creationRequestForAssetFromImage: originalAsset];
+//                [imgReq setLocation: location];
+//            } completionHandler:^(BOOL success, NSError * _Nullable error) {
+//                if (!success) {
+//                    NSLog(@"Error saving image to the photo library: %@", error);
+//                    // Handle the error here
+//                } else {
+//                    NSLog(@"Success: %@", "!!");
+//                }
+//            }];
+        
+        
+        
+      // Create a CLLocation object with the geolocation coordinates
+      CLLocationCoordinate2D coordinates2d = CLLocationCoordinate2DMake([lat doubleValue],
+                                                                              [lon doubleValue]);
+      CLLocation *location = [[CLLocation alloc] initWithLatitude:coordinates2d.latitude longitude:coordinates2d.longitude];
+            
+      NSLog(@"Created CLLocation.");
+      // Get the asset's existing metadata
+      PHContentEditingInputRequestOptions *editOptions = [[PHContentEditingInputRequestOptions alloc] init];
+      editOptions.networkAccessAllowed = YES; // To fetch the full image data
+      NSLog(@"Created editOptions");
+            
+      BOOL canEdit = [originalAsset canPerformEditOperation:PHAssetEditOperationProperties];
+      NSLog(@"can perform edit properties: %d", canEdit);
+      NSLog(@"can perform edit content: %d", [originalAsset canPerformEditOperation:PHAssetEditOperationContent]);
+//        PHContentEditingInputRequestID *requestId = [originalAsset requestContentEditingInputWithOptions:editOptions completionHandler:^(PHContentEditingInput *contentEditingInput, NSDictionary *info) {
+//                                                                                                                                             if (!contentEditingInput) {
+//                                                                                                                                                 NSLog(@"Error requesting content editing input.");
+//                                                                                                                                                 return;
+//                                                                                                                                             }
+//                                                                                                                                             NSLog(@"Started edit.");
+//                                                                                                                                             // Create a mutable copy of the existing metadata
+//                                                                                                                                             NSMutableDictionary *metadata = [contentEditingInput.adjustmentData mutableCopy];
+//
+//                                                                                                                                             // Set the geolocation metadata
+//                                                                                                                                             NSMutableDictionary *gpsDictionary = [NSMutableDictionary dictionary];
+//                                                                                                                                             gpsDictionary[(NSString *) kCGImagePropertyGPSLatitude] = @(coordinates2d.latitude);
+//                                                                                                                                             gpsDictionary[(NSString *) kCGImagePropertyGPSLongitude] = @(coordinates2d.longitude);
+//                                                                                                                                             gpsDictionary[(NSString *) kCGImagePropertyGPSAltitude] = @(location.altitude);
+//
+//                                                                                                                                             metadata[(NSString *) kCGImagePropertyGPSDictionary] = gpsDictionary;
+//
+//                                                                                                                                             // Create an instance of PHAdjustmentData to store the edit information
+//                                                                                                                                             //                NSData *adjustmentData = [@"YourAdjustmentData" dataUsingEncoding:NSUTF8StringEncoding]; // Adjust this as needed
+//                                                                                                                                             //                adjustmentData = metadata;
+//
+//                                                                                                                                             // Prepare the PHContentEditingOutput object with updated metadata and adjustment data
+//                                                                                                                                             PHContentEditingOutput *contentEditingOutput = [[PHContentEditingOutput alloc] initWithContentEditingInput:contentEditingInput];
+//                                                                                                                                             contentEditingOutput.adjustmentData = metadata;
+//
+//
+//                                                                                                                                             NSLog(@"Saving asset.");
+//                                                                                                                                             // Save the updated metadata to the asset
+//                                                                                                                                             [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+//                                                                                                                                                 PHAssetChangeRequest *request = [PHAssetChangeRequest changeRequestForAsset:originalAsset];
+//                                                                                                                                                 request.contentEditingOutput = contentEditingOutput;
+//                                                                                                                                             }                                 completionHandler:^(BOOL success,
+//                                                                                                                                                                                                   NSError *error) {
+//                                                                                                                                                 if (success) {
+//                                                                                                                                                     NSLog(@"Geolocation added successfully.");
+//                                                                                                                                                 } else {
+//                                                                                                                                                     NSLog(@"Error adding geolocation: %@", error);
+//                                                                                                                                                 }
+//                                                                                                                                             }];
+//                                                                                                                                         }];
+//        NSLog(@"Request id: %d", requestId);
     }
-
-    if (maxWidth != nil || maxHeight != nil) {
-      image = [FLTImagePickerImageUtil scaledImage:image
-                                          maxWidth:maxWidth
-                                         maxHeight:maxHeight
-                               isMetadataAvailable:YES];
-    }
-
-    if (!originalAsset) {
-      // Image picked without an original asset (e.g. User took a photo directly)
-      [self saveImageWithPickerInfo:info image:image imageQuality:desiredImageQuality];
-    } else {
-      void (^resultHandler)(NSData *imageData, NSString *dataUTI, NSDictionary *info) = ^(
-          NSData *_Nullable imageData, NSString *_Nullable dataUTI, NSDictionary *_Nullable info) {
-        // maxWidth and maxHeight are used only for GIF images.
-        [self saveImageWithOriginalImageData:imageData
-                                       image:image
-                                    maxWidth:maxWidth
-                                   maxHeight:maxHeight
-                                imageQuality:desiredImageQuality];
-      };
-      if (@available(iOS 13.0, *)) {
-        [[PHImageManager defaultManager]
-            requestImageDataAndOrientationForAsset:originalAsset
-                                           options:nil
-                                     resultHandler:^(NSData *_Nullable imageData,
-                                                     NSString *_Nullable dataUTI,
-                                                     CGImagePropertyOrientation orientation,
-                                                     NSDictionary *_Nullable info) {
-                                       resultHandler(imageData, dataUTI, info);
-                                     }];
-      } else {
+      
+        if (maxWidth != nil || maxHeight != nil) {
+            image = [FLTImagePickerImageUtil scaledImage:image
+                                                maxWidth:maxWidth
+                                               maxHeight:maxHeight
+                                     isMetadataAvailable:YES];
+        }
+        
+        if (!originalAsset) {
+            // Image picked without an original asset (e.g. User took a photo directly)
+            NSMutableDictionary *metadataDictionary = [[info objectForKey: UIImagePickerControllerMediaMetadata]mutableCopy];
+            
+            NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionaryWithDictionary:metadataDictionary];
+            NSMutableDictionary *EXIFDictionary = [[mutableDictionary objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
+            if(!EXIFDictionary) {
+                //if the image does not have an EXIF dictionary (not all images do), then create one for us to use
+                EXIFDictionary = [NSMutableDictionary dictionary];
+            }
+            NSMutableDictionary *GPSDictionary = [NSMutableDictionary dictionary];
+            [GPSDictionary setValue:[NSNumber numberWithFloat: [lat doubleValue]] forKey:(NSString*)kCGImagePropertyGPSLatitude];
+            [GPSDictionary setValue:[NSNumber numberWithFloat: [lon doubleValue]] forKey:(NSString*)kCGImagePropertyGPSLongitude];
+           
+            [EXIFDictionary setValue:@"TEST value" forKey:(NSString *)kCGImagePropertyExifUserComment];
+            //add our modified EXIF data back into the image’s metadata
+            [mutableDictionary setObject:EXIFDictionary forKey:(NSString *)kCGImagePropertyExifDictionary];
+                
+            
+            [mutableDictionary setObject:GPSDictionary forKey:(NSString *)kCGImagePropertyGPSDictionary];
+            
+            [metadataDictionary setObject: mutableDictionary forKey: UIImagePickerControllerMediaMetadata];
+            
+            for (id key in metadataDictionary) {
+                id value = metadataDictionary[key];
+                NSLog(@"Key: %@, Value: %@", key, value);
+            }
+            
+            [self saveImageWithPickerInfo:metadataDictionary image:image imageQuality:desiredImageQuality];
+        } else {
+            void (^resultHandler)(NSData *imageData, NSString *dataUTI, NSDictionary *info) = ^(
+                                                                                                NSData *_Nullable imageData, NSString *_Nullable dataUTI,
+                                                                                                NSDictionary *_Nullable info) {
+                                                                                                    // maxWidth and maxHeight are used only for GIF images.
+                                                                                                    [self saveImageWithOriginalImageData:imageData
+                                                                                                                                   image:image
+                                                                                                                                maxWidth:maxWidth
+                                                                                                                               maxHeight:maxHeight
+                                                                                                                            imageQuality:desiredImageQuality];
+                                                                                                };
+            if (@available
+                (iOS
+                 13.0, *)) {
+                [[PHImageManager defaultManager]
+                 requestImageDataAndOrientationForAsset:originalAsset
+                 options:nil
+                 resultHandler:^(NSData *_Nullable imageData,
+                                 NSString *_Nullable dataUTI,
+                                 CGImagePropertyOrientation orientation,
+                                 NSDictionary *_Nullable info) {
+                    resultHandler(imageData, dataUTI, info);
+                }];
+            } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [[PHImageManager defaultManager]

@@ -57,6 +57,7 @@ class ImageSelectionOptions {
   ImageSelectionOptions({
     this.maxWidth,
     this.maxHeight,
+    this.defaultCoordinates,
     required this.quality,
   });
 
@@ -65,6 +66,9 @@ class ImageSelectionOptions {
 
   /// If set, the max height that the image should be resized to fit in.
   double? maxHeight;
+
+  /// If set, the coordinates to be written to image's exif metadata in case they were cut off by the OS.
+  Coordinates? defaultCoordinates;
 
   /// The quality of the output image, from 0-100.
   ///
@@ -75,6 +79,7 @@ class ImageSelectionOptions {
     return <Object?>[
       maxWidth,
       maxHeight,
+      defaultCoordinates?.encode(),
       quality,
     ];
   }
@@ -84,7 +89,10 @@ class ImageSelectionOptions {
     return ImageSelectionOptions(
       maxWidth: result[0] as double?,
       maxHeight: result[1] as double?,
-      quality: result[2]! as int,
+      defaultCoordinates: result[2] != null
+          ? Coordinates.decode(result[2]! as List<Object?>)
+          : null,
+      quality: result[3]! as int,
     );
   }
 }
@@ -105,8 +113,7 @@ class MediaSelectionOptions {
   static MediaSelectionOptions decode(Object result) {
     result as List<Object?>;
     return MediaSelectionOptions(
-      imageSelectionOptions:
-          ImageSelectionOptions.decode(result[0]! as List<Object?>),
+      imageSelectionOptions: ImageSelectionOptions.decode(result[0]! as List<Object?>),
     );
   }
 }
@@ -115,14 +122,18 @@ class MediaSelectionOptions {
 class VideoSelectionOptions {
   VideoSelectionOptions({
     this.maxDurationSeconds,
+    this.defaultCoordinates,
   });
 
   /// The maximum desired length for the video, in seconds.
   int? maxDurationSeconds;
 
+  Coordinates? defaultCoordinates;
+
   Object encode() {
     return <Object?>[
       maxDurationSeconds,
+      defaultCoordinates?.encode(),
     ];
   }
 
@@ -130,6 +141,9 @@ class VideoSelectionOptions {
     result as List<Object?>;
     return VideoSelectionOptions(
       maxDurationSeconds: result[0] as int?,
+      defaultCoordinates: result[1] != null
+          ? Coordinates.decode(result[1]! as List<Object?>)
+          : null,
     );
   }
 }
@@ -156,7 +170,35 @@ class SourceSpecification {
     result as List<Object?>;
     return SourceSpecification(
       type: SourceType.values[result[0]! as int],
-      camera: result[1] != null ? SourceCamera.values[result[1]! as int] : null,
+      camera: result[1] != null
+          ? SourceCamera.values[result[1]! as int]
+          : null,
+    );
+  }
+}
+
+class Coordinates {
+  Coordinates({
+    required this.latitude,
+    required this.longitude,
+  });
+
+  double latitude;
+
+  double longitude;
+
+  Object encode() {
+    return <Object?>[
+      latitude,
+      longitude,
+    ];
+  }
+
+  static Coordinates decode(Object result) {
+    result as List<Object?>;
+    return Coordinates(
+      latitude: result[0]! as double,
+      longitude: result[1]! as double,
     );
   }
 }
@@ -240,20 +282,23 @@ class _ImagePickerApiCodec extends StandardMessageCodec {
     } else if (value is CacheRetrievalResult) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is GeneralOptions) {
+    } else if (value is Coordinates) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is ImageSelectionOptions) {
+    } else if (value is GeneralOptions) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is MediaSelectionOptions) {
+    } else if (value is ImageSelectionOptions) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is SourceSpecification) {
+    } else if (value is MediaSelectionOptions) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is VideoSelectionOptions) {
+    } else if (value is SourceSpecification) {
       buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else if (value is VideoSelectionOptions) {
+      buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -263,19 +308,21 @@ class _ImagePickerApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
         return CacheRetrievalError.decode(readValue(buffer)!);
-      case 129:
+      case 129: 
         return CacheRetrievalResult.decode(readValue(buffer)!);
-      case 130:
+      case 130: 
+        return Coordinates.decode(readValue(buffer)!);
+      case 131: 
         return GeneralOptions.decode(readValue(buffer)!);
-      case 131:
+      case 132: 
         return ImageSelectionOptions.decode(readValue(buffer)!);
-      case 132:
+      case 133: 
         return MediaSelectionOptions.decode(readValue(buffer)!);
-      case 133:
+      case 134: 
         return SourceSpecification.decode(readValue(buffer)!);
-      case 134:
+      case 135: 
         return VideoSelectionOptions.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -297,16 +344,12 @@ class ImagePickerApi {
   ///
   /// Elements must not be null, by convention. See
   /// https://github.com/flutter/flutter/issues/97848
-  Future<List<String?>> pickImages(
-      SourceSpecification arg_source,
-      ImageSelectionOptions arg_options,
-      GeneralOptions arg_generalOptions) async {
+  Future<List<String?>> pickImages(SourceSpecification arg_source, ImageSelectionOptions arg_options, GeneralOptions arg_generalOptions) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ImagePickerApi.pickImages', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-            .send(<Object?>[arg_source, arg_options, arg_generalOptions])
-        as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_source, arg_options, arg_generalOptions]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -332,16 +375,12 @@ class ImagePickerApi {
   ///
   /// Elements must not be null, by convention. See
   /// https://github.com/flutter/flutter/issues/97848
-  Future<List<String?>> pickVideos(
-      SourceSpecification arg_source,
-      VideoSelectionOptions arg_options,
-      GeneralOptions arg_generalOptions) async {
+  Future<List<String?>> pickVideos(SourceSpecification arg_source, VideoSelectionOptions arg_options, GeneralOptions arg_generalOptions) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ImagePickerApi.pickVideos', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-            .send(<Object?>[arg_source, arg_options, arg_generalOptions])
-        as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_source, arg_options, arg_generalOptions]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -367,15 +406,12 @@ class ImagePickerApi {
   ///
   /// Elements must not be null, by convention. See
   /// https://github.com/flutter/flutter/issues/97848
-  Future<List<String?>> pickMedia(
-      MediaSelectionOptions arg_mediaSelectionOptions,
-      GeneralOptions arg_generalOptions) async {
+  Future<List<String?>> pickMedia(MediaSelectionOptions arg_mediaSelectionOptions, GeneralOptions arg_generalOptions) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ImagePickerApi.pickMedia', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-            .send(<Object?>[arg_mediaSelectionOptions, arg_generalOptions])
-        as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_mediaSelectionOptions, arg_generalOptions]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -402,7 +438,8 @@ class ImagePickerApi {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ImagePickerApi.retrieveLostResults', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel.send(null) as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(null) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

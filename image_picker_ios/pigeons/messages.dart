@@ -24,12 +24,14 @@ class MediaSelectionOptions {
   MediaSelectionOptions({
     required this.maxSize,
     this.imageQuality,
+    this.defaultCoordinates,
     required this.requestFullMetadata,
     required this.allowMultiple,
   });
 
   MaxSize maxSize;
   int? imageQuality;
+  Coordinates? defaultCoordinates;
   bool requestFullMetadata;
   bool allowMultiple;
 }
@@ -46,19 +48,26 @@ class SourceSpecification {
   SourceCamera? camera;
 }
 
+class Coordinates {
+  Coordinates(this.latitude, this.longitude);
+  double latitude;
+  double longitude;
+}
+
+
 @HostApi(dartHostTestHandler: 'TestHostImagePickerApi')
 abstract class ImagePickerApi {
   @async
-  @ObjCSelector('pickImageWithSource:maxSize:quality:fullMetadata:')
+  @ObjCSelector('pickImageWithSource:maxSize:quality:fullMetadata:defaultCoordinates:')
   String? pickImage(SourceSpecification source, MaxSize maxSize,
-      int? imageQuality, bool requestFullMetadata);
+      int? imageQuality, bool requestFullMetadata, Coordinates? defaultCoordinates);
   @async
-  @ObjCSelector('pickMultiImageWithMaxSize:quality:fullMetadata:')
+  @ObjCSelector('pickMultiImageWithMaxSize:quality:fullMetadata:defaultCoordinates:')
   List<String?> pickMultiImage(
-      MaxSize maxSize, int? imageQuality, bool requestFullMetadata);
+      MaxSize maxSize, int? imageQuality, bool requestFullMetadata, Coordinates? defaultCoordinates);
   @async
-  @ObjCSelector('pickVideoWithSource:maxDuration:')
-  String? pickVideo(SourceSpecification source, int? maxDurationSeconds);
+  @ObjCSelector('pickVideoWithSource:maxDuration:defaultCoordinates:')
+  String? pickVideo(SourceSpecification source, int? maxDurationSeconds, Coordinates? defaultCoordinates);
 
   /// Selects images and videos and returns their paths.
   @async

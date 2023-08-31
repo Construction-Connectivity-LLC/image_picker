@@ -17,14 +17,17 @@ class _TestHostImagePickerApiCodec extends StandardMessageCodec {
   const _TestHostImagePickerApiCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is MaxSize) {
+    if (value is Coordinates) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is MediaSelectionOptions) {
+    } else if (value is MaxSize) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is SourceSpecification) {
+    } else if (value is MediaSelectionOptions) {
       buffer.putUint8(130);
+      writeValue(buffer, value.encode());
+    } else if (value is SourceSpecification) {
+      buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -34,11 +37,13 @@ class _TestHostImagePickerApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
+        return Coordinates.decode(readValue(buffer)!);
+      case 129: 
         return MaxSize.decode(readValue(buffer)!);
-      case 129:
+      case 130: 
         return MediaSelectionOptions.decode(readValue(buffer)!);
-      case 130:
+      case 131: 
         return SourceSpecification.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -47,40 +52,31 @@ class _TestHostImagePickerApiCodec extends StandardMessageCodec {
 }
 
 abstract class TestHostImagePickerApi {
-  static TestDefaultBinaryMessengerBinding? get _testBinaryMessengerBinding =>
-      TestDefaultBinaryMessengerBinding.instance;
+  static TestDefaultBinaryMessengerBinding? get _testBinaryMessengerBinding => TestDefaultBinaryMessengerBinding.instance;
   static const MessageCodec<Object?> codec = _TestHostImagePickerApiCodec();
 
-  Future<String?> pickImage(SourceSpecification source, MaxSize maxSize,
-      int? imageQuality, bool requestFullMetadata);
+  Future<String?> pickImage(SourceSpecification source, MaxSize maxSize, int? imageQuality, bool requestFullMetadata, Coordinates? defaultCoordinates);
 
-  Future<List<String?>> pickMultiImage(
-      MaxSize maxSize, int? imageQuality, bool requestFullMetadata);
+  Future<List<String?>> pickMultiImage(MaxSize maxSize, int? imageQuality, bool requestFullMetadata, Coordinates? defaultCoordinates);
 
-  Future<String?> pickVideo(
-      SourceSpecification source, int? maxDurationSeconds);
+  Future<String?> pickVideo(SourceSpecification source, int? maxDurationSeconds, Coordinates? defaultCoordinates);
 
   /// Selects images and videos and returns their paths.
   Future<List<String?>> pickMedia(MediaSelectionOptions mediaSelectionOptions);
 
-  static void setup(TestHostImagePickerApi? api,
-      {BinaryMessenger? binaryMessenger}) {
+  static void setup(TestHostImagePickerApi? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
           'dev.flutter.pigeon.ImagePickerApi.pickImage', codec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel, null);
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, null);
       } else {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel,
-                (Object? message) async {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, (Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.ImagePickerApi.pickImage was null.');
+          'Argument for dev.flutter.pigeon.ImagePickerApi.pickImage was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final SourceSpecification? arg_source =
-              (args[0] as SourceSpecification?);
+          final SourceSpecification? arg_source = (args[0] as SourceSpecification?);
           assert(arg_source != null,
               'Argument for dev.flutter.pigeon.ImagePickerApi.pickImage was null, expected non-null SourceSpecification.');
           final MaxSize? arg_maxSize = (args[1] as MaxSize?);
@@ -90,8 +86,8 @@ abstract class TestHostImagePickerApi {
           final bool? arg_requestFullMetadata = (args[3] as bool?);
           assert(arg_requestFullMetadata != null,
               'Argument for dev.flutter.pigeon.ImagePickerApi.pickImage was null, expected non-null bool.');
-          final String? output = await api.pickImage(arg_source!, arg_maxSize!,
-              arg_imageQuality, arg_requestFullMetadata!);
+          final Coordinates? arg_defaultCoordinates = (args[4] as Coordinates?);
+          final String? output = await api.pickImage(arg_source!, arg_maxSize!, arg_imageQuality, arg_requestFullMetadata!, arg_defaultCoordinates);
           return <Object?>[output];
         });
       }
@@ -101,14 +97,11 @@ abstract class TestHostImagePickerApi {
           'dev.flutter.pigeon.ImagePickerApi.pickMultiImage', codec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel, null);
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, null);
       } else {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel,
-                (Object? message) async {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, (Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.ImagePickerApi.pickMultiImage was null.');
+          'Argument for dev.flutter.pigeon.ImagePickerApi.pickMultiImage was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final MaxSize? arg_maxSize = (args[0] as MaxSize?);
           assert(arg_maxSize != null,
@@ -117,8 +110,8 @@ abstract class TestHostImagePickerApi {
           final bool? arg_requestFullMetadata = (args[2] as bool?);
           assert(arg_requestFullMetadata != null,
               'Argument for dev.flutter.pigeon.ImagePickerApi.pickMultiImage was null, expected non-null bool.');
-          final List<String?> output = await api.pickMultiImage(
-              arg_maxSize!, arg_imageQuality, arg_requestFullMetadata!);
+          final Coordinates? arg_defaultCoordinates = (args[3] as Coordinates?);
+          final List<String?> output = await api.pickMultiImage(arg_maxSize!, arg_imageQuality, arg_requestFullMetadata!, arg_defaultCoordinates);
           return <Object?>[output];
         });
       }
@@ -128,22 +121,18 @@ abstract class TestHostImagePickerApi {
           'dev.flutter.pigeon.ImagePickerApi.pickVideo', codec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel, null);
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, null);
       } else {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel,
-                (Object? message) async {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, (Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.ImagePickerApi.pickVideo was null.');
+          'Argument for dev.flutter.pigeon.ImagePickerApi.pickVideo was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final SourceSpecification? arg_source =
-              (args[0] as SourceSpecification?);
+          final SourceSpecification? arg_source = (args[0] as SourceSpecification?);
           assert(arg_source != null,
               'Argument for dev.flutter.pigeon.ImagePickerApi.pickVideo was null, expected non-null SourceSpecification.');
           final int? arg_maxDurationSeconds = (args[1] as int?);
-          final String? output =
-              await api.pickVideo(arg_source!, arg_maxDurationSeconds);
+          final Coordinates? arg_defaultCoordinates = (args[2] as Coordinates?);
+          final String? output = await api.pickVideo(arg_source!, arg_maxDurationSeconds, arg_defaultCoordinates);
           return <Object?>[output];
         });
       }
@@ -153,21 +142,16 @@ abstract class TestHostImagePickerApi {
           'dev.flutter.pigeon.ImagePickerApi.pickMedia', codec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel, null);
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, null);
       } else {
-        _testBinaryMessengerBinding!.defaultBinaryMessenger
-            .setMockDecodedMessageHandler<Object?>(channel,
-                (Object? message) async {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(channel, (Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.ImagePickerApi.pickMedia was null.');
+          'Argument for dev.flutter.pigeon.ImagePickerApi.pickMedia was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final MediaSelectionOptions? arg_mediaSelectionOptions =
-              (args[0] as MediaSelectionOptions?);
+          final MediaSelectionOptions? arg_mediaSelectionOptions = (args[0] as MediaSelectionOptions?);
           assert(arg_mediaSelectionOptions != null,
               'Argument for dev.flutter.pigeon.ImagePickerApi.pickMedia was null, expected non-null MediaSelectionOptions.');
-          final List<String?> output =
-              await api.pickMedia(arg_mediaSelectionOptions!);
+          final List<String?> output = await api.pickMedia(arg_mediaSelectionOptions!);
           return <Object?>[output];
         });
       }

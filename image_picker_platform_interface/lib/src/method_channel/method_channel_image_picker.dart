@@ -22,6 +22,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
@@ -39,11 +41,15 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
   Future<List<PickedFile>?> pickMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) async {
     final List<dynamic>? paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
+      defaultLatitude: defaultLatitude,
+      defaultLongitude: defaultLongitude,
       imageQuality: imageQuality,
     );
     if (paths == null) {
@@ -56,6 +62,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
   Future<List<dynamic>?> _getMultiImagePath({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     bool requestFullMetadata = true,
   }) {
@@ -77,6 +85,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
       <String, dynamic>{
         'maxWidth': maxWidth,
         'maxHeight': maxHeight,
+        'defaultLatitude': defaultLatitude,
+        'defaultLongitude': defaultLongitude,
         'imageQuality': imageQuality,
         'requestFullMetadata': requestFullMetadata,
       },
@@ -88,6 +98,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
     double? maxWidth,
     double? maxHeight,
     int? imageQuality,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     bool requestFullMetadata = true,
   }) {
@@ -110,6 +122,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
         'source': source.index,
         'maxWidth': maxWidth,
         'maxHeight': maxHeight,
+        'defaultLatitude': defaultLatitude,
+        'defaultLongitude': defaultLongitude,
         'imageQuality': imageQuality,
         'cameraDevice': preferredCameraDevice.index,
         'requestFullMetadata': requestFullMetadata,
@@ -120,6 +134,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
   @override
   Future<PickedFile?> pickVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
@@ -133,6 +149,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
 
   Future<String?> _getVideoPath({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) {
@@ -140,6 +158,8 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
       'pickVideo',
       <String, dynamic>{
         'source': source.index,
+        'defaultLatitude': defaultLatitude,
+        'defaultLongitude': defaultLongitude,
         'maxDuration': maxDuration?.inSeconds,
         'cameraDevice': preferredCameraDevice.index
       },
