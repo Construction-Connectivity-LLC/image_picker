@@ -95,3 +95,4 @@ Image.memory(await pickedFile.readAsBytes())
 ```
 
 [1]: https://pub.dev/packages/image_picker
+

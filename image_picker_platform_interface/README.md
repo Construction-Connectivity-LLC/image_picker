@@ -24,3 +24,4 @@ on why a less-clean interface is preferable to a breaking change.
 
 [1]: ../image_picker
 [2]: lib/image_picker_platform_interface.dart
+

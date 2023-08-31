@@ -33,3 +33,4 @@ import 'package:image_picker_platform_interface/image_picker_platform_interface.
 
 [1]: https://pub.dev/packages/image_picker
 [2]: https://flutter.dev/docs/development/packages-and-plugins/developing-packages#endorsed-federated-plugin
+

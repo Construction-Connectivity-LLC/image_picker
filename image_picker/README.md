@@ -203,3 +203,4 @@ plugin's own `PickedFile` instances. The previous methods were supported through
 | `List<PickedFile> images = await _picker.getMultiImage(...)` | `List<XFile> images = await _picker.pickMultiImage(...)` |
 | `PickedFile video = await _picker.getVideo(...)` | `XFile video = await _picker.pickVideo(...)` |
 | `LostData response = await _picker.getLostData()` | `LostDataResponse response = await _picker.retrieveLostData()` |
+
