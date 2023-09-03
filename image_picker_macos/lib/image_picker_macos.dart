@@ -31,6 +31,8 @@ class ImagePickerMacOS extends CameraDelegatingImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
@@ -51,6 +53,8 @@ class ImagePickerMacOS extends CameraDelegatingImagePickerPlatform {
   @override
   Future<PickedFile?> pickVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
@@ -71,6 +75,8 @@ class ImagePickerMacOS extends CameraDelegatingImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
@@ -120,6 +126,8 @@ class ImagePickerMacOS extends CameraDelegatingImagePickerPlatform {
   @override
   Future<XFile?> getVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
@@ -148,6 +156,8 @@ class ImagePickerMacOS extends CameraDelegatingImagePickerPlatform {
   Future<List<XFile>> getMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) async {
     // TODO(stuartmorgan): Add a native implementation that can use

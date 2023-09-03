@@ -57,6 +57,8 @@ class MockImagePickerPlatform extends _i1.Mock
     required _i2.ImageSource? source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     _i2.CameraDevice? preferredCameraDevice = _i2.CameraDevice.rear,
   }) =>
@@ -78,6 +80,8 @@ class MockImagePickerPlatform extends _i1.Mock
   _i4.Future<List<_i2.PickedFile>?> pickMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) =>
       (super.noSuchMethod(
@@ -95,6 +99,8 @@ class MockImagePickerPlatform extends _i1.Mock
   @override
   _i4.Future<_i2.PickedFile?> pickVideo({
     required _i2.ImageSource? source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     _i2.CameraDevice? preferredCameraDevice = _i2.CameraDevice.rear,
     Duration? maxDuration,
   }) =>

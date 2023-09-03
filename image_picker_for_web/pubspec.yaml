@@ -28,6 +28,10 @@ dependencies:
       path: image_picker_platform_interface
   mime: ^1.0.4
 
+dependency_overrides:
+  image_picker_platform_interface:
+    path: ../image_picker_platform_interface
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

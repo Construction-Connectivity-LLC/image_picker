@@ -43,6 +43,7 @@ class _ApiLogger implements TestHostImagePickerApi {
     MaxSize maxSize,
     int? imageQuality,
     bool requestFullMetadata,
+      Coordinates? defaultCoordinates,
   ) async {
     // Flatten arguments for easy comparison.
     calls.add(_LoggedMethodCall('pickImage', arguments: <String, dynamic>{
@@ -61,6 +62,7 @@ class _ApiLogger implements TestHostImagePickerApi {
     MaxSize maxSize,
     int? imageQuality,
     bool requestFullMetadata,
+      Coordinates? defaultCoordinates,
   ) async {
     calls.add(_LoggedMethodCall('pickMultiImage', arguments: <String, dynamic>{
       'maxWidth': maxSize.width,
@@ -86,7 +88,8 @@ class _ApiLogger implements TestHostImagePickerApi {
 
   @override
   Future<String?> pickVideo(
-      SourceSpecification source, int? maxDurationSeconds) async {
+      SourceSpecification source, int? maxDurationSeconds,
+      Coordinates? defaultCoordinates,) async {
     calls.add(_LoggedMethodCall('pickVideo', arguments: <String, dynamic>{
       'source': source.type,
       'cameraDevice': source.camera,

@@ -186,6 +186,8 @@ abstract class ImagePickerPlatform extends PlatformInterface {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) {
@@ -214,6 +216,8 @@ abstract class ImagePickerPlatform extends PlatformInterface {
   Future<List<XFile>?> getMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) {
     throw UnimplementedError('getMultiImage() has not been implemented.');
@@ -255,6 +259,8 @@ abstract class ImagePickerPlatform extends PlatformInterface {
   /// If no images were picked, the return value is null.
   Future<XFile?> getVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) {
@@ -378,6 +384,8 @@ abstract class CameraDelegatingImagePickerPlatform extends ImagePickerPlatform {
   @override
   Future<XFile?> getVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {

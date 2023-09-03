@@ -73,6 +73,8 @@ class ImagePicker {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     bool requestFullMetadata = true,
@@ -127,6 +129,8 @@ class ImagePicker {
   Future<List<XFile>> pickMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     bool requestFullMetadata = true,
   }) {
@@ -182,6 +186,8 @@ class ImagePicker {
   Future<XFile?> pickMedia({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     bool requestFullMetadata = true,
   }) async {
@@ -238,6 +244,8 @@ class ImagePicker {
   Future<List<XFile>> pickMultipleMedia({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     bool requestFullMetadata = true,
   }) {
@@ -278,6 +286,8 @@ class ImagePicker {
   ///
   Future<XFile?> pickVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) {

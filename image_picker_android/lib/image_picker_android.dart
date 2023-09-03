@@ -190,13 +190,20 @@ class ImagePickerAndroid extends ImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     final String? path = await _getImagePath(
       source: source,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
+      defaultCoordinates: defaultCoordinates,
       imageQuality: imageQuality,
       preferredCameraDevice: preferredCameraDevice,
     );
@@ -230,11 +237,18 @@ class ImagePickerAndroid extends ImagePickerPlatform {
   Future<List<XFile>?> getMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) async {
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     final List<dynamic> paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
+      defaultCoordinates: defaultCoordinates,
       imageQuality: imageQuality,
     );
     if (paths.isEmpty) {
@@ -262,11 +276,18 @@ class ImagePickerAndroid extends ImagePickerPlatform {
   @override
   Future<XFile?> getVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
+    final Coordinates? defaultCoordinates = defaultLatitude != null &&
+            defaultLongitude != null
+        ? Coordinates(latitude: defaultLatitude, longitude: defaultLongitude)
+        : null;
     final String? path = await _getVideoPath(
       source: source,
+      defaultCoordinates: defaultCoordinates,
       maxDuration: maxDuration,
       preferredCameraDevice: preferredCameraDevice,
     );

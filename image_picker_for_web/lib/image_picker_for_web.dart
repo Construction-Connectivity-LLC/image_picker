@@ -100,6 +100,8 @@ class ImagePickerPlugin extends ImagePickerPlatform {
   @override
   Future<XFile?> getVideo({
     required ImageSource source,
+    double? defaultLatitude,
+    double? defaultLongitude,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
     Duration? maxDuration,
   }) async {
@@ -181,6 +183,8 @@ class ImagePickerPlugin extends ImagePickerPlatform {
     required ImageSource source,
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) async {
@@ -200,6 +204,8 @@ class ImagePickerPlugin extends ImagePickerPlatform {
   Future<List<XFile>> getMultiImage({
     double? maxWidth,
     double? maxHeight,
+    double? defaultLatitude,
+    double? defaultLongitude,
     int? imageQuality,
   }) async {
     return getMultiImageWithOptions(
