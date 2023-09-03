@@ -666,24 +666,6 @@ completion
     NSNumber *imageQuality = self.callContext.imageQuality;
     NSNumber *desiredImageQuality = [self getDesiredImageQuality:imageQuality];
     
-    NSLog(@"default latitude: %@", lat);
-    NSLog(@"default latitude: %@", lat);
-    NSLog(@"default coordinates: %@", coordinates.description);
-        
-    NSURL *url = info[UIImagePickerControllerReferenceURL];
-    NSLog(@"%@", info.description);
-    if (url != nil) {
-        PHFetchResult *fetchResult = [PHAsset fetchAssetsWithALAssetURLs:@[url] options:nil];
-        PHAsset *asset = [fetchResult firstObject];
-        NSLog(@"latitude: %f", asset.location.coordinate.latitude);
-        NSLog(@"creationDate: %@", asset.creationDate);
-        NSLog(@"default latitude: %@", lat);
-        NSLog(@"default longitude: %@", lon);
-    } else {
-        NSLog(@"%@", info.description);
-    }
-      
-      
       // Create CLLocationCoordinate2D using latitude and longitude values
       CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([lat doubleValue], [lon doubleValue]);
 
@@ -694,32 +676,10 @@ completion
                                                      verticalAccuracy:kCLLocationAccuracyBest
                                                             timestamp:[NSDate date]];
      
-      
-      
-        
     PHAsset *originalAsset;
     if (_callContext.requestFullMetadata) {
       // Full metadata are available only in PHAsset, which requires gallery permission.
       originalAsset = [FLTImagePickerPhotoAssetUtil getAssetFromImagePickerInfo:info];
-      NSLog(@"latitude: %f", originalAsset.location.coordinate.latitude);
-      NSLog(@"longitude: %f", originalAsset.location.coordinate.longitude);
-      NSLog(@"default latitude: %@", lat);
-      NSLog(@"default longitude: %@", lon);
-      NSLog(@"Starting edit.");
-        
-        
-//        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-//                PHAssetChangeRequest *imgReq = [PHAssetChangeRequest creationRequestForAssetFromImage: originalAsset];
-//                [imgReq setLocation: location];
-//            } completionHandler:^(BOOL success, NSError * _Nullable error) {
-//                if (!success) {
-//                    NSLog(@"Error saving image to the photo library: %@", error);
-//                    // Handle the error here
-//                } else {
-//                    NSLog(@"Success: %@", "!!");
-//                }
-//            }];
-        
         
         
       // Create a CLLocation object with the geolocation coordinates
@@ -727,56 +687,6 @@ completion
                                                                               [lon doubleValue]);
       CLLocation *location = [[CLLocation alloc] initWithLatitude:coordinates2d.latitude longitude:coordinates2d.longitude];
             
-      NSLog(@"Created CLLocation.");
-      // Get the asset's existing metadata
-      PHContentEditingInputRequestOptions *editOptions = [[PHContentEditingInputRequestOptions alloc] init];
-      editOptions.networkAccessAllowed = YES; // To fetch the full image data
-      NSLog(@"Created editOptions");
-            
-      BOOL canEdit = [originalAsset canPerformEditOperation:PHAssetEditOperationProperties];
-      NSLog(@"can perform edit properties: %d", canEdit);
-      NSLog(@"can perform edit content: %d", [originalAsset canPerformEditOperation:PHAssetEditOperationContent]);
-//        PHContentEditingInputRequestID *requestId = [originalAsset requestContentEditingInputWithOptions:editOptions completionHandler:^(PHContentEditingInput *contentEditingInput, NSDictionary *info) {
-//                                                                                                                                             if (!contentEditingInput) {
-//                                                                                                                                                 NSLog(@"Error requesting content editing input.");
-//                                                                                                                                                 return;
-//                                                                                                                                             }
-//                                                                                                                                             NSLog(@"Started edit.");
-//                                                                                                                                             // Create a mutable copy of the existing metadata
-//                                                                                                                                             NSMutableDictionary *metadata = [contentEditingInput.adjustmentData mutableCopy];
-//
-//                                                                                                                                             // Set the geolocation metadata
-//                                                                                                                                             NSMutableDictionary *gpsDictionary = [NSMutableDictionary dictionary];
-//                                                                                                                                             gpsDictionary[(NSString *) kCGImagePropertyGPSLatitude] = @(coordinates2d.latitude);
-//                                                                                                                                             gpsDictionary[(NSString *) kCGImagePropertyGPSLongitude] = @(coordinates2d.longitude);
-//                                                                                                                                             gpsDictionary[(NSString *) kCGImagePropertyGPSAltitude] = @(location.altitude);
-//
-//                                                                                                                                             metadata[(NSString *) kCGImagePropertyGPSDictionary] = gpsDictionary;
-//
-//                                                                                                                                             // Create an instance of PHAdjustmentData to store the edit information
-//                                                                                                                                             //                NSData *adjustmentData = [@"YourAdjustmentData" dataUsingEncoding:NSUTF8StringEncoding]; // Adjust this as needed
-//                                                                                                                                             //                adjustmentData = metadata;
-//
-//                                                                                                                                             // Prepare the PHContentEditingOutput object with updated metadata and adjustment data
-//                                                                                                                                             PHContentEditingOutput *contentEditingOutput = [[PHContentEditingOutput alloc] initWithContentEditingInput:contentEditingInput];
-//                                                                                                                                             contentEditingOutput.adjustmentData = metadata;
-//
-//
-//                                                                                                                                             NSLog(@"Saving asset.");
-//                                                                                                                                             // Save the updated metadata to the asset
-//                                                                                                                                             [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-//                                                                                                                                                 PHAssetChangeRequest *request = [PHAssetChangeRequest changeRequestForAsset:originalAsset];
-//                                                                                                                                                 request.contentEditingOutput = contentEditingOutput;
-//                                                                                                                                             }                                 completionHandler:^(BOOL success,
-//                                                                                                                                                                                                   NSError *error) {
-//                                                                                                                                                 if (success) {
-//                                                                                                                                                     NSLog(@"Geolocation added successfully.");
-//                                                                                                                                                 } else {
-//                                                                                                                                                     NSLog(@"Error adding geolocation: %@", error);
-//                                                                                                                                                 }
-//                                                                                                                                             }];
-//                                                                                                                                         }];
-//        NSLog(@"Request id: %d", requestId);
     }
       
         if (maxWidth != nil || maxHeight != nil) {
@@ -788,33 +698,32 @@ completion
         
         if (!originalAsset) {
             // Image picked without an original asset (e.g. User took a photo directly)
-            NSMutableDictionary *metadataDictionary = [[info objectForKey: UIImagePickerControllerMediaMetadata]mutableCopy];
-            
-            NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionaryWithDictionary:metadataDictionary];
-            NSMutableDictionary *EXIFDictionary = [[mutableDictionary objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
-            if(!EXIFDictionary) {
-                //if the image does not have an EXIF dictionary (not all images do), then create one for us to use
-                EXIFDictionary = [NSMutableDictionary dictionary];
-            }
-            NSMutableDictionary *GPSDictionary = [NSMutableDictionary dictionary];
-            [GPSDictionary setValue:[NSNumber numberWithFloat: [lat doubleValue]] forKey:(NSString*)kCGImagePropertyGPSLatitude];
-            [GPSDictionary setValue:[NSNumber numberWithFloat: [lon doubleValue]] forKey:(NSString*)kCGImagePropertyGPSLongitude];
-           
-            [EXIFDictionary setValue:@"TEST value" forKey:(NSString *)kCGImagePropertyExifUserComment];
-            //add our modified EXIF data back into the image’s metadata
-            [mutableDictionary setObject:EXIFDictionary forKey:(NSString *)kCGImagePropertyExifDictionary];
+            if (lat == nil && lon == nil) {
+                [self saveImageWithPickerInfo:info image:image imageQuality:desiredImageQuality];
+            } else {
+                NSMutableDictionary *metadataDictionary = [[info objectForKey: UIImagePickerControllerMediaMetadata]mutableCopy];
                 
-            
-            [mutableDictionary setObject:GPSDictionary forKey:(NSString *)kCGImagePropertyGPSDictionary];
-            
-            [metadataDictionary setObject: mutableDictionary forKey: UIImagePickerControllerMediaMetadata];
-            
-            for (id key in metadataDictionary) {
-                id value = metadataDictionary[key];
-                NSLog(@"Key: %@, Value: %@", key, value);
+                NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionaryWithDictionary:metadataDictionary];
+                NSMutableDictionary *EXIFDictionary = [[mutableDictionary objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
+                if(!EXIFDictionary) {
+                    //if the image does not have an EXIF dictionary (not all images do), then create one for us to use
+                    EXIFDictionary = [NSMutableDictionary dictionary];
+                }
+                NSMutableDictionary *GPSDictionary = [NSMutableDictionary dictionary];
+                [GPSDictionary setValue:[NSNumber numberWithFloat: [lat doubleValue]] forKey:(NSString*)kCGImagePropertyGPSLatitude];
+                [GPSDictionary setValue:[NSNumber numberWithFloat: [lon doubleValue]] forKey:(NSString*)kCGImagePropertyGPSLongitude];
+                
+                [EXIFDictionary setValue:@"TEST value" forKey:(NSString *)kCGImagePropertyExifUserComment];
+                //add our modified EXIF data back into the image’s metadata
+                [mutableDictionary setObject:EXIFDictionary forKey:(NSString *)kCGImagePropertyExifDictionary];
+                
+                
+                [mutableDictionary setObject:GPSDictionary forKey:(NSString *)kCGImagePropertyGPSDictionary];
+                
+                [metadataDictionary setObject: mutableDictionary forKey: UIImagePickerControllerMediaMetadata];
+                
+                [self saveImageWithPickerInfo:metadataDictionary image:image imageQuality:desiredImageQuality];
             }
-            
-            [self saveImageWithPickerInfo:metadataDictionary image:image imageQuality:desiredImageQuality];
         } else {
             void (^resultHandler)(NSData *imageData, NSString *dataUTI, NSDictionary *info) = ^(
                                                                                                 NSData *_Nullable imageData, NSString *_Nullable dataUTI,
