@@ -782,7 +782,7 @@ public class ImagePickerDelegate
                     ExifInterface exif = new ExifInterface(fileDescriptor);
                     String latitude = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
                     String longitude = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
-                    if (latitude == null || longitude == null && defaultCoordinates != null) {
+                    if ((latitude == null || longitude == null) && defaultCoordinates != null) {
                         assert defaultCoordinates != null;
                         exif.setLatLong(defaultCoordinates.getLatitude(), defaultCoordinates.getLongitude());
                         exif.saveAttributes();

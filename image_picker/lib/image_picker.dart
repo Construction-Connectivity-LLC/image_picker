@@ -83,6 +83,8 @@ class ImagePicker {
         ImagePickerOptions.createAndValidate(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
+      defaultLongitude: defaultLongitude,
+      defaultLatitude: defaultLatitude,
       imageQuality: imageQuality,
       preferredCameraDevice: preferredCameraDevice,
       requestFullMetadata: requestFullMetadata,
